@@ -1,14 +1,11 @@
 import numpy as np
 import random
 def filler(arr, param, *argv):
-    print(argv)
     if len(argv) == 4:
         row_a, row_z, col_a, col_z = argv
         arr[row_a:row_z, col_a:col_z] = param
     else:
         raise Exception("Too much or less arguments")
-
-
 
 class Map:
     def __init__(self, row, col):
@@ -134,7 +131,8 @@ class Map:
 
     def enemy(self, param):
         self.unmov.add(param)
-        x = random.randint(0, self.row - 1)
-        y = random.randint(0, self.col - 1)
-        k = (x - 3, x + 3, y - 3, y + 3)
-        filler(self.map, param, k)
+        for _ in range(5):
+            x = random.randint(0, self.row - 1)
+            y = random.randint(0, self.col - 1)
+            filler(self.map, param, x - 3, x + 3, y - 3, y + 3)
+            print(x - 3, x + 3, y - 3, y + 3)

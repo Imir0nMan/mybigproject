@@ -1,6 +1,19 @@
 import tkinter as tk
 from tkinter import scrolledtext
-import random
+from combat_sys import *
+from character import Character
+
+def check_near_knight(matrix, player_position, knight_symbol):
+    """
+    Check if the player is near the knight in the matrix.
+    """
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            x = player_position[0] + dx
+            y = player_position[1] + dy
+            if 0 <= x < len(matrix) and 0 <= y < len(matrix[0]) and matrix[x][y] == knight_symbol:
+                return True
+    return False
 
 class ColorfulMatrixGame:
     def __init__(self, root, matrix, piece_size, obstacle_numbers):
@@ -22,9 +35,7 @@ class ColorfulMatrixGame:
         canvas_width = self.piece_size * (self.matrix_size//3)
         canvas_height = self.piece_size * (self.matrix_size//3)
 
-        # Keep the matrix on the left side of the screen
-        matrix_x = 50
-        matrix_y = 50
+
 
 
         self.canvas = tk.Canvas(root, bg='black', highlightthickness=0)
@@ -35,7 +46,14 @@ class ColorfulMatrixGame:
         self.border_x2 = canvas_width + 1
         self.border_y2 = canvas_height + 1
 
+        self.player = {
+            "name": "",
+            "health": 10,
+            "attack": 5,
+            "defense": 2
+        }
 
+        self.enemyes = Character(10)
 
         self.welcome_label = tk.Label(root, text="Welcome to adventure game", bg='black', fg='green',
                                       font=('Courier', 16))
@@ -86,6 +104,9 @@ class ColorfulMatrixGame:
         for number, color in color_mapping.items():
             self.colors[number] = color
 
+
+
+
     def draw_matrix(self):
         self.canvas.delete("all")
         temp = 50
@@ -110,6 +131,8 @@ class ColorfulMatrixGame:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
 
         self.canvas.create_rectangle(self.border_x1, self.border_y1, self.border_x2, self.border_y2, outline='green')
+
+
 
     def move_player(self, direction, steps=1):
         dx, dy = 0, 0
@@ -144,6 +167,8 @@ class ColorfulMatrixGame:
 
         self.draw_matrix()
 
+
+
     def reveal_nearby_numbers(self):
         x, y = self.person_position
 
@@ -158,8 +183,12 @@ class ColorfulMatrixGame:
         self.text_area.see(tk.END)
         self.text_area.configure(state='disabled')
 
+
+
     def exit_game(self):
         self.root.destroy()
+
+
 
     def process_command(self, event):
         command = self.input.get().lower()
@@ -176,4 +205,31 @@ class ColorfulMatrixGame:
                 steps = 1
             self.move_player(direction, steps)
         else:
-            self.print_message(f"Unknown command: {command}")
+            if check_near_knight(self.matrix, self.person_position, 15):
+                fight_result = handle_fighting(command, self.player, self.enemyes)
+                self.player = fight_result['player_stats']
+                if "fend" in fight_result:
+                    if fight_result["fend"]:
+                        self.print_message("You fend enemy successfully.")
+                    else:
+                        self.print_message("You tried to fend, but enemy brok it")
+                        self.print_message(f"The knight attacks you, dealing {fight_result['enemy_damage']} damage.\n")
+                elif "block" in fight_result:
+                    if fight_result["block"]:
+                        self.print_message("You put block successfully.")
+                    else:
+                        self.print_message("You put block, but enemy brok it")
+
+                elif "player_stats" in fight_result:
+
+                    self.print_message(f"You attacked the knight, dealing {fight_result['player_damage']} damage.")
+                    self.print_message(f"The knight attacks you, dealing {fight_result['enemy_damage']} damage.\n")
+                    self.print_message(f"Your health is {self.player['health']}\n")
+                    self.print_message(f"That knight's health is {fight_result['enemy_health']}")
+
+                elif "unknown_command" in fight_result:
+                    self.print_message("Unknown command during combat.")
+                if self.player["health"] <= 0:
+                    self.print_message("You have been defeated by the knight. Game over.")
+                elif self.enemyes.health <= 0:
+                    self.print_message("You have defeated the knight!")
