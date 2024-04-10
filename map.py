@@ -136,3 +136,6 @@ class Map:
             y = random.randint(0, self.col - 1)
             filler(self.map, param, x - 3, x + 3, y - 3, y + 3)
             print(x - 3, x + 3, y - 3, y + 3)
+        x = 70
+        y = 70
+        filler(self.map, param, x - 3, x + 3, y - 3, y + 3)

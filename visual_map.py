@@ -3,17 +3,6 @@ from tkinter import scrolledtext
 from combat_sys import *
 from character import Character
 
-def check_near_knight(matrix, player_position, knight_symbol):
-    """
-    Check if the player is near the knight in the matrix.
-    """
-    for dx in range(-1, 2):
-        for dy in range(-1, 2):
-            x = player_position[0] + dx
-            y = player_position[1] + dy
-            if 0 <= x < len(matrix) and 0 <= y < len(matrix[0]) and matrix[x][y] == knight_symbol:
-                return True
-    return False
 
 class ColorfulMatrixGame:
     def __init__(self, root, matrix, piece_size, obstacle_numbers):
@@ -46,14 +35,13 @@ class ColorfulMatrixGame:
         self.border_x2 = canvas_width + 1
         self.border_y2 = canvas_height + 1
 
-        self.player = {
-            "name": "",
-            "health": 10,
-            "attack": 5,
-            "defense": 2
-        }
+        self.player = Character(100)
 
-        self.enemyes = Character(10)
+        self.enemy = Character(100)
+
+        # Randomly choose who starts the fight
+        self.temp_turn = TempTurn()
+
 
         self.welcome_label = tk.Label(root, text="Welcome to adventure game", bg='black', fg='green',
                                       font=('Courier', 16))
@@ -179,6 +167,15 @@ class ColorfulMatrixGame:
 
     def print_message(self, message):
         self.text_area.configure(state='normal')
+        if isinstance(message, (int, float)):
+            # Convert numbers to string format
+            message = str(message)
+        elif isinstance(message, str):
+            # For formatted strings, no conversion needed
+            pass
+        else:
+            # If it's neither a number nor a string, convert to string format
+            message = str(message)
         self.text_area.insert(tk.END, message + "\n")
         self.text_area.see(tk.END)
         self.text_area.configure(state='disabled')
@@ -204,32 +201,6 @@ class ColorfulMatrixGame:
             else:
                 steps = 1
             self.move_player(direction, steps)
-        else:
-            if check_near_knight(self.matrix, self.person_position, 15):
-                fight_result = handle_fighting(command, self.player, self.enemyes)
-                self.player = fight_result['player_stats']
-                if "fend" in fight_result:
-                    if fight_result["fend"]:
-                        self.print_message("You fend enemy successfully.")
-                    else:
-                        self.print_message("You tried to fend, but enemy brok it")
-                        self.print_message(f"The knight attacks you, dealing {fight_result['enemy_damage']} damage.\n")
-                elif "block" in fight_result:
-                    if fight_result["block"]:
-                        self.print_message("You put block successfully.")
-                    else:
-                        self.print_message("You put block, but enemy brok it")
 
-                elif "player_stats" in fight_result:
-
-                    self.print_message(f"You attacked the knight, dealing {fight_result['player_damage']} damage.")
-                    self.print_message(f"The knight attacks you, dealing {fight_result['enemy_damage']} damage.\n")
-                    self.print_message(f"Your health is {self.player['health']}\n")
-                    self.print_message(f"That knight's health is {fight_result['enemy_health']}")
-
-                elif "unknown_command" in fight_result:
-                    self.print_message("Unknown command during combat.")
-                if self.player["health"] <= 0:
-                    self.print_message("You have been defeated by the knight. Game over.")
-                elif self.enemyes.health <= 0:
-                    self.print_message("You have defeated the knight!")
+        if check_near_knight(self.matrix, self.person_position, 15):
+            fight_process(self, command, self.player, self.enemy, self.temp_turn.turn)
