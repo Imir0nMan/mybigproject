@@ -9,8 +9,8 @@ def check_near_knight(matrix, player_position, knight_symbol):
     """
     Check if the player is near the knight in the matrix.
     """
-    for dx in range(-3, 4):
-        for dy in range(-3, 4):
+    for dx in range(-7, 8):
+        for dy in range(-7, 8):
             x = player_position[0] + dx
             y = player_position[1] + dy
             if 0 <= x < len(matrix) and 0 <= y < len(matrix[0]) and matrix[x][y] == knight_symbol:

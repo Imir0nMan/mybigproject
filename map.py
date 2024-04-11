@@ -134,8 +134,11 @@ class Map:
         for _ in range(5):
             x = random.randint(0, self.row - 1)
             y = random.randint(0, self.col - 1)
-            filler(self.map, param, x - 3, x + 3, y - 3, y + 3)
-            print(x - 3, x + 3, y - 3, y + 3)
-        x = 70
-        y = 70
-        filler(self.map, param, x - 3, x + 3, y - 3, y + 3)
+            filler(self.map, param, x - 1, x + 1, y - 1, y + 1)
+            print(x - 1, x + 1, y - 1, y + 1)
+        x = 55
+        y = 55
+        filler(self.map, param, x - 1, x + 1, y - 1, y + 1)
+
+class Npc:
+    pass

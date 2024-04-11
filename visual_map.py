@@ -93,8 +93,6 @@ class ColorfulMatrixGame:
             self.colors[number] = color
 
 
-
-
     def draw_matrix(self):
         self.canvas.delete("all")
         temp = 50
