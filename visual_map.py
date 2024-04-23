@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 from combat_sys import *
 from character import Character
-
+from game_narrative import display
 
 class ColorfulMatrixGame:
     def __init__(self, root, matrix, piece_size, obstacle_numbers):
@@ -58,14 +58,33 @@ class ColorfulMatrixGame:
         self.input.pack(side=tk.BOTTOM, fill=tk.X)
         self.input.bind('<Return>', self.process_command)
 
+        map_width = self.piece_size * (self.matrix_size // 3)
+        text_widget_width = root.winfo_screenwidth() - map_width - 40
+
+        # Create a temporary widget to calculate font metrics
+        temp_widget = tk.Label(root, text='Temp', bg='black', fg='green', font=('Courier', 16))
+        font_height = temp_widget.winfo_reqheight()//3
+        temp_widget.destroy()
+
+        text_widget_height = 30 * font_height
+
+        # Place the text widget slightly below the map
+        self.info_text = tk.Text(root, bg='black', fg='green', font=('Courier', 16), wrap=tk.WORD, bd=0,
+                                 highlightthickness=0)
+        self.info_text.place(x=map_width + 20, y=40, width=text_widget_width, height=text_widget_height)
+
+
+
         self.init_color_map()
         self.draw_matrix()
+        display(self)
 
         # Arrow key bindings
         root.bind("<Left>", lambda event: self.move_player("left"))
         root.bind("<Right>", lambda event: self.move_player("right"))
         root.bind("<Up>", lambda event: self.move_player("up"))
         root.bind("<Down>", lambda event: self.move_player("down"))
+
 
     def colors_mapping(self):
         return {
@@ -178,12 +197,18 @@ class ColorfulMatrixGame:
         self.text_area.see(tk.END)
         self.text_area.configure(state='disabled')
 
-
+    def print_info_message(self, message):
+        self.info_text.configure(state='normal')
+        #self.info_text.delete(1.0, tk.END)  # Clear previous text
+        self.info_text.insert(tk.END, message)
+        self.info_text.configure(state='disabled')
 
     def exit_game(self):
         self.root.destroy()
 
 
+    def looloo(self):
+        self.print_info_message("down")
 
     def process_command(self, event):
         command = self.input.get().lower()
@@ -202,3 +227,4 @@ class ColorfulMatrixGame:
 
         if check_near_knight(self.matrix, self.person_position, 15):
             fight_process(self, command, self.player, self.enemy, self.temp_turn.turn)
+
