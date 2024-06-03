@@ -1,5 +1,4 @@
 from map import *
-from combat_sys import *
 def map1(size):
     n = size
     if (n >=30):

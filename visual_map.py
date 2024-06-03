@@ -1,11 +1,14 @@
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk
 from combat_sys import *
 from character import Character
 from game_narrative import display
 
+
 class ColorfulMatrixGame:
     def __init__(self, root, matrix, piece_size, obstacle_numbers):
+        bg_color = "black"
+        fg_color = "yellow"
         self.root = root
         self.root.title("Map")
         self.root.configure(bg='black')
@@ -27,7 +30,7 @@ class ColorfulMatrixGame:
 
 
 
-        self.canvas = tk.Canvas(root, bg='black', highlightthickness=0)
+        self.canvas = tk.Canvas(root, bg=bg_color, highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         self.border_x1 = 0
@@ -43,18 +46,18 @@ class ColorfulMatrixGame:
         self.temp_turn = TempTurn()
 
 
-        self.welcome_label = tk.Label(root, text="Welcome to adventure game", bg='black', fg='green',
-                                      font=('Courier', 16))
-        self.welcome_label.place(x=root.winfo_screenwidth() - 700, y=10)  # Position the label at the top right corner
+        self.welcome_label = tk.Label(root, text="Welcome to daventure game", bg=bg_color, fg=fg_color,
+                                      font=('Courier', 26))
+        self.welcome_label.place(x=root.winfo_screenwidth() - 800, y=10)  # Position the label at the top right corner
 
         # Adjust the height of the text area
-        self.text_area = scrolledtext.ScrolledText(root, bg='black', fg='green', insertbackground='green',
+        self.text_area = scrolledtext.ScrolledText(root, bg=bg_color, fg=fg_color, insertbackground='green',
                                                    font=('Courier', 18), wrap=tk.WORD, height=12)
         self.text_area.pack(fill=tk.BOTH, expand=False)  # Make sure it doesn't expand
 
         self.text_area.configure(state='disabled')
 
-        self.input = tk.Entry(root, bg='black', fg='green', insertbackground='green', font=('Courier', 20))
+        self.input = tk.Entry(root, bg=bg_color, fg=fg_color, insertbackground='green', font=('Courier', 20))
         self.input.pack(side=tk.BOTTOM, fill=tk.X)
         self.input.bind('<Return>', self.process_command)
 
@@ -69,15 +72,21 @@ class ColorfulMatrixGame:
         text_widget_height = 30 * font_height
 
         # Place the text widget slightly below the map
-        self.info_text = tk.Text(root, bg='black', fg='green', font=('Courier', 16), wrap=tk.WORD, bd=0,
+        self.info_text = tk.Text(root, bg=bg_color, fg=fg_color, font=('Courier', 28), wrap=tk.WORD, bd=0,
                                  highlightthickness=0)
-        self.info_text.place(x=map_width + 20, y=40, width=text_widget_width, height=text_widget_height)
+        self.info_text.place(x=map_width + 10, y=60, width=text_widget_width, height=text_widget_height)
 
 
-
+        self.step_count = 0
         self.init_color_map()
         self.draw_matrix()
-        display(self)
+        self.location = 0
+        display(self, self.location, self.step_count)
+
+
+
+        #ENTRY PAGE
+        #self.login_overlay = self.create_login_overlay()
 
         # Arrow key bindings
         root.bind("<Left>", lambda event: self.move_player("left"))
@@ -105,6 +114,43 @@ class ColorfulMatrixGame:
             14: "chocolate",
             15: "red"
         }
+
+    def create_login_overlay(self):
+        overlay = tk.Frame(self.root, bg='black')
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        login_frame = ttk.Frame(overlay, padding=10, style='Login.TFrame')
+        login_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+        # Create a style object
+        style = ttk.Style()
+        style.configure('Login.TFrame', background='black')
+
+        tk.Label(login_frame, text="Enter your name:", foreground='green', bg="black", font=('Courier', 16)).pack(pady=5)
+        self.username_entry = ttk.Entry(login_frame)
+        self.username_entry.pack(pady=5)
+
+        tk.Label(login_frame, text="Choose hallow:", foreground='green',bg="black", font=('Courier', 16)).pack(pady=5)
+        self.weapon_combobox = ttk.Combobox(login_frame,
+                                            values=["Glock", "Drugs", "P.G.", "Shotgun", "Machete", "Food"])
+        self.weapon_combobox.pack(pady=5)
+
+        login_button = ttk.Button(login_frame, text="Login", command=self.start_game)
+        login_button.pack(pady=10)
+
+        overlay.lift()  # Ensure overlay is on top
+        return overlay
+
+    def start_game(self):
+        username = self.username_entry.get()
+        weapon = self.weapon_combobox.get()
+        if username.strip() and weapon:
+            self.username = username
+            self.weapon = weapon
+            self.login_overlay.destroy()  # Close the login overlay
+            self.draw_matrix()  # Redraw matrix after login
+
+
 
     def init_color_map(self):
         color_mapping = self.colors_mapping()
@@ -149,9 +195,10 @@ class ColorfulMatrixGame:
             dx = -1
         elif direction == "right":
             dx = 1
-
+        self.step_count +=1
         for _ in range(steps):
             new_x, new_y = self.person_position[0] + dx, self.person_position[1] + dy
+
             if (
                     0 <= new_x < self.matrix_size
                     and 0 <= new_y < self.matrix_size
@@ -166,11 +213,14 @@ class ColorfulMatrixGame:
                     self.reveal_nearby_numbers()
                     break  # Stop moving if encountering a new color
                 self.person_position = (new_x, new_y)
+                self.welcome_label.destroy()
+                self.location = self.matrix[new_x][new_y]
                 self.reveal_nearby_numbers()
             else:
                 break  # Stop moving if an obstacle is encountered
 
         self.draw_matrix()
+        display(self, self.location, self.step_count)
 
 
 
@@ -199,16 +249,13 @@ class ColorfulMatrixGame:
 
     def print_info_message(self, message):
         self.info_text.configure(state='normal')
-        #self.info_text.delete(1.0, tk.END)  # Clear previous text
+        self.info_text.delete(1.0, tk.END)  # Clear previous text
         self.info_text.insert(tk.END, message)
         self.info_text.configure(state='disabled')
 
+
     def exit_game(self):
         self.root.destroy()
-
-
-    def looloo(self):
-        self.print_info_message("down")
 
     def process_command(self, event):
         command = self.input.get().lower()

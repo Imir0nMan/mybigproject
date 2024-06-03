@@ -139,6 +139,3 @@ class Map:
         x = 55
         y = 55
         filler(self.map, param, x - 1, x + 1, y - 1, y + 1)
-
-class Npc:
-    pass

@@ -67,22 +67,22 @@ def player_move(tk, command, player_weapon):
         player_action = None  # Reset player's action if unknown command
         return {"unknown_command": True}
 
-    tk.print_message(f"Player action: {player_action}")
+    tk.print_message(f"Your move: {player_action}")
 
     if player_result.get("block"):
         if player_result["block"]:
-            tk.print_message("Player successfully blocked.")
+            tk.print_message("You put block successfully")
         else:
-            tk.print_message("Player attempted to block but failed.")
+            tk.print_message("Your attempt to block failed")
 
     elif player_result.get("fend"):
         if player_result["fend"]:
-            tk.print_message("Player successfully fended.")
+            tk.print_message("You fended successfully")
         else:
-            tk.print_message("Player attempted to fend but failed.")
+            tk.print_message("Your attempt to fend was unsuccessful")
 
     else:
-        tk.print_message(f"Player attacks for {player_result.get('character_attack', 0)} damage.")
+        tk.print_message(f"You attacked dealing {player_result.get('character_attack', 0)} damage.")
 
     return player_result
 
@@ -91,21 +91,21 @@ def player_move(tk, command, player_weapon):
 def npc_move(tk, npc_weapon):
     npc_action = random.choices(["attack", "block", "fend"], weights=[0.6, 0.2, 0.2], k=1)[0]
     npc_result = handle_fighting(npc_action, npc_weapon)
-    tk.print_message(f"NPC action: {npc_action}")
+    tk.print_message(f"Enemy move: {npc_action}")
     if npc_result.get("block"):
         if npc_result["block"]:
-            tk.print_message("NPC successfully blocked.")
+            tk.print_message("Enemy put block successfully")
         else:
-            tk.print_message("NPC attempted to block but failed.")
+            tk.print_message("Enemy's attempt to block failed")
 
     elif npc_result.get("fend"):
         if npc_result["fend"]:
-            tk.print_message("NPC successfully fended.")
+            tk.print_message("Enemy fended successfully")
         else:
-            tk.print_message("NPC attempted to fend but failed.")
+            tk.print_message("Enemy's attempt to fend was unsuccessful")
 
     else:
-        tk.print_message(f"NPC attacks for {npc_result.get('character_attack', 0)} damage.")
+        tk.print_message(f"Enemy attacked dealing {npc_result.get('character_attack', 0)} damage.")
 
     return npc_result
 
@@ -122,13 +122,13 @@ def fight_process(tk, command, player, npc, temp_turn):
             npc_result = npc_move(tk, npc_weapon)
             player_result = player_move(tk, command, player_weapon)
             if player_result.get("unknown_command"):
-                tk.print_message("Unknown command. Please choose attack, block, or fend.")
+                tk.print_message("Unnown command: please insetr attack, block or fend")
                 player_action = None  # Reset player's action if unknown command
                 return
         elif temp_turn == "player":
             player_result = player_move(tk, command, player_weapon)
             if player_result.get("unknown_command"):
-                tk.print_message("Unknown command. Please choose attack, block, or fend.")
+                tk.print_message("Unnown command: please insetr attack, block or fend")
                 player_action = None  # Reset player's action if unknown command
                 return
             npc_result = npc_move(tk, npc_weapon)
@@ -136,12 +136,16 @@ def fight_process(tk, command, player, npc, temp_turn):
         npc_damage = max(0, player_result.get("character_attack", 0) - (npc_result.get("block", False) * 5))
         player_health -= player_damage
         npc_health -= npc_damage
-        tk.print_message(f"Player's health: {player_health}")
-        tk.print_message(f"NPC's health: {npc_health}")
+        if player_health < 0:
+            player_health = 0
+        if npc_health < 0:
+            npc_health = 0
+        tk.print_message(f"Your health՝ {player_health}")
+        tk.print_message(f"Enemy's health {npc_health}")
     if player_health <= 0:
-        tk.print_message("You have been defeated. Game Over!")
+        tk.print_message("You loose, the enemy killed you. Game Over")
     elif npc_health <= 0:
-        tk.print_message("Congratulations! You have defeated the NPC.")
+        tk.print_message("Congratulations! \nYou defeated the enemy")
     player.set_health(player_health)
     npc.set_health(npc_health)
 
